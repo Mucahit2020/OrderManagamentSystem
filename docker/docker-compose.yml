@@ -1,0 +1,110 @@
+version: '3.8'
+
+services:
+  # PostgreSQL - Orders Database
+  orders-db:
+    image: postgres:16-alpine
+    container_name: orders-postgresql
+    environment:
+      POSTGRES_DB: OrdersDB
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: password123
+    ports:
+      - "5432:5432"
+    volumes:
+      - orders_data:/var/lib/postgresql/data
+      - ./scripts/init-orders-db.sql:/docker-entrypoint-initdb.d/init-orders-db.sql
+    networks:
+      - order-management-network
+
+  # PostgreSQL - Inventory Database  
+  inventory-db:
+    image: postgres:16-alpine
+    container_name: inventory-postgresql
+    environment:
+      POSTGRES_DB: InventoryDB
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: password123
+    ports:
+      - "5433:5432"
+    volumes:
+      - inventory_data:/var/lib/postgresql/data
+      - ./scripts/init-inventory-db.sql:/docker-entrypoint-initdb.d/init-inventory-db.sql
+    networks:
+      - order-management-network
+
+  # PostgreSQL - Invoices Database
+  invoices-db:
+    image: postgres:16-alpine
+    container_name: invoices-postgresql
+    environment:
+      POSTGRES_DB: InvoicesDB
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: password123
+    ports:
+      - "5434:5432"
+    volumes:
+      - invoices_data:/var/lib/postgresql/data
+      - ./scripts/init-invoices-db.sql:/docker-entrypoint-initdb.d/init-invoices-db.sql
+    networks:
+      - order-management-network
+
+  # RabbitMQ Message Broker
+  rabbitmq:
+    image: rabbitmq:3.13-management-alpine
+    container_name: rabbitmq-broker
+    environment:
+      RABBITMQ_DEFAULT_USER: admin
+      RABBITMQ_DEFAULT_PASS: password123
+      RABBITMQ_DEFAULT_VHOST: /
+    ports:
+      - "5672:5672"    # AMQP port
+      - "15672:15672"  # Management UI port
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+      - ./scripts/rabbitmq-setup.sh:/docker-entrypoint-initdb.d/rabbitmq-setup.sh
+    networks:
+      - order-management-network
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # pgAdmin - Database Management UI (Optional)
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: pgadmin-ui
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@orderms.com
+      PGADMIN_DEFAULT_PASSWORD: password123
+    ports:
+      - "8080:80"
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
+    networks:
+      - order-management-network
+    depends_on:
+      - orders-db
+      - inventory-db
+      - invoices-db
+
+volumes:
+  orders_data:
+    driver: local
+  inventory_data:
+    driver: local
+  invoices_data:
+    driver: local
+  rabbitmq_data:
+    driver: local
+  pgadmin_data:
+    driver: local
+
+networks:
+  order-management-network:
+    driver: bridge
+
+# ====================================
+# DEVELOPMENT OVERRIDES
+# ====================================

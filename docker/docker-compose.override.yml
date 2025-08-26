@@ -1,0 +1,31 @@
+version: '3.8'
+
+services:
+  orders-db:
+    environment:
+      - POSTGRES_LOG_STATEMENT=all
+      - POSTGRES_LOG_MIN_MESSAGES=info
+
+  inventory-db:
+    environment:
+      - POSTGRES_LOG_STATEMENT=all  
+      - POSTGRES_LOG_MIN_MESSAGES=info
+
+  invoices-db:
+    environment:
+      - POSTGRES_LOG_STATEMENT=all
+      - POSTGRES_LOG_MIN_MESSAGES=info
+
+  rabbitmq:
+    environment:
+      - RABBITMQ_LOG_LEVEL=info
+    # Development için extra management plugins
+    command: >
+      bash -c "
+        rabbitmq-plugins enable rabbitmq_management rabbitmq_shovel rabbitmq_shovel_management &&
+        rabbitmq-server
+      "
+
+# ====================================
+# DATABASE INITIALIZATION SCRIPTS
+# ====================================
