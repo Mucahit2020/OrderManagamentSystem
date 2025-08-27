@@ -8,7 +8,7 @@ using OrderManagement.InvoiceService.Data;
 
 #nullable disable
 
-namespace OrderManagement.InvoiceService.Data.Migrations
+namespace OrderManagement.InvoiceService.Migrations
 {
     [DbContext(typeof(InvoiceContext))]
     partial class InvoiceContextModelSnapshot : ModelSnapshot

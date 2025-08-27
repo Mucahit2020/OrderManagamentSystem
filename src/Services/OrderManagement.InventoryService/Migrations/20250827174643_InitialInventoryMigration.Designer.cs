@@ -9,11 +9,11 @@ using OrderManagement.InventoryService.Data;
 
 #nullable disable
 
-namespace OrderManagement.InventoryService.Data.Migrations
+namespace OrderManagement.InventoryService.Migrations
 {
     [DbContext(typeof(InventoryContext))]
-    [Migration("20250826162654_InitialCreate")]
-    partial class InitialCreate
+    [Migration("20250827174643_InitialInventoryMigration")]
+    partial class InitialInventoryMigration
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -99,14 +99,7 @@ namespace OrderManagement.InventoryService.Data.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("MovementType")
-                        .HasDatabaseName("idx_stock_movements_type");
-
-                    b.HasIndex("OrderId")
-                        .HasDatabaseName("idx_stock_movements_order_id");
-
-                    b.HasIndex("ProductId")
-                        .HasDatabaseName("idx_stock_movements_product_id");
+                    b.HasIndex("ProductId");
 
                     b.ToTable("StockMovements");
                 });

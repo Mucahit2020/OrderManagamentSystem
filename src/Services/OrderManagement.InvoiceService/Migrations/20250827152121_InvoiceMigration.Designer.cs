@@ -9,11 +9,11 @@ using OrderManagement.InvoiceService.Data;
 
 #nullable disable
 
-namespace OrderManagement.InvoiceService.Data.Migrations
+namespace OrderManagement.InvoiceService.Migrations
 {
     [DbContext(typeof(InvoiceContext))]
-    [Migration("20250826185615_InitialCreate")]
-    partial class InitialCreate
+    [Migration("20250827152121_InvoiceMigration")]
+    partial class InvoiceMigration
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)

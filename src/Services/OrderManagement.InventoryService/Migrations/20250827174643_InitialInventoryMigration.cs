@@ -1,11 +1,12 @@
-﻿using Microsoft.EntityFrameworkCore.Migrations;
+﻿using System;
+using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
-namespace OrderManagement.InventoryService.Data.Migrations
+namespace OrderManagement.InventoryService.Migrations
 {
     /// <inheritdoc />
-    public partial class InitialCreate : Migration
+    public partial class InitialInventoryMigration : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -55,19 +56,9 @@ namespace OrderManagement.InventoryService.Data.Migrations
                 });
 
             migrationBuilder.CreateIndex(
-                name: "idx_stock_movements_order_id",
-                table: "StockMovements",
-                column: "OrderId");
-
-            migrationBuilder.CreateIndex(
-                name: "idx_stock_movements_product_id",
+                name: "IX_StockMovements_ProductId",
                 table: "StockMovements",
                 column: "ProductId");
-
-            migrationBuilder.CreateIndex(
-                name: "idx_stock_movements_type",
-                table: "StockMovements",
-                column: "MovementType");
         }
 
         /// <inheritdoc />

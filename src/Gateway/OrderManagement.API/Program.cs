@@ -49,9 +49,9 @@ builder.Services.AddSwaggerGen(c =>
 });
 
 // HTTP Clients for Microservices
-var orderServiceUrl = builder.Configuration.GetValue<string>("Services:OrderService:BaseUrl") ?? "http://localhost:5000";
+var orderServiceUrl = builder.Configuration.GetValue<string>("Services:OrderService:BaseUrl") ?? "http://localhost:5002";
 var inventoryServiceUrl = builder.Configuration.GetValue<string>("Services:InventoryService:BaseUrl") ?? "http://localhost:5001";
-var invoiceServiceUrl = builder.Configuration.GetValue<string>("Services:InvoiceService:BaseUrl") ?? "http://localhost:5002";
+var invoiceServiceUrl = builder.Configuration.GetValue<string>("Services:InvoiceService:BaseUrl") ?? "http://localhost:5003";
 
 builder.Services.AddHttpClient<IOrderServiceClient, OrderServiceClient>(client =>
 {
@@ -61,21 +61,11 @@ builder.Services.AddHttpClient<IOrderServiceClient, OrderServiceClient>(client =
 });
 
 // Health checks for microservices
-// Health checks for microservices
 builder.Services.AddHealthChecks()
-    .AddCheck("order-service", () =>
-    {
-        // Custom health check implementation
-        return Microsoft.Extensions.Diagnostics.HealthChecks.HealthCheckResult.Healthy();
-    })
-    .AddCheck("inventory-service", () =>
-    {
-        return Microsoft.Extensions.Diagnostics.HealthChecks.HealthCheckResult.Healthy();
-    })
-    .AddCheck("invoice-service", () =>
-    {
-        return Microsoft.Extensions.Diagnostics.HealthChecks.HealthCheckResult.Healthy();
-    });
+    .AddCheck("order-service", () => Microsoft.Extensions.Diagnostics.HealthChecks.HealthCheckResult.Healthy())
+    .AddCheck("inventory-service", () => Microsoft.Extensions.Diagnostics.HealthChecks.HealthCheckResult.Healthy())
+    .AddCheck("invoice-service", () => Microsoft.Extensions.Diagnostics.HealthChecks.HealthCheckResult.Healthy());
+
 // CORS Policy
 builder.Services.AddCors(options =>
 {
@@ -96,7 +86,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI(c =>
     {
         c.SwaggerEndpoint("/swagger/v1/swagger.json", "Order Management API v1");
-        c.RoutePrefix = string.Empty; // Swagger UI at root
+        c.RoutePrefix = "swagger"; // Swagger UI artýk /swagger altýnda
     });
 }
 

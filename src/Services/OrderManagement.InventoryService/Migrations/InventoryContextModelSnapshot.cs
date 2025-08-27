@@ -8,7 +8,7 @@ using OrderManagement.InventoryService.Data;
 
 #nullable disable
 
-namespace OrderManagement.InventoryService.Data.Migrations
+namespace OrderManagement.InventoryService.Migrations
 {
     [DbContext(typeof(InventoryContext))]
     partial class InventoryContextModelSnapshot : ModelSnapshot
@@ -96,14 +96,7 @@ namespace OrderManagement.InventoryService.Data.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("MovementType")
-                        .HasDatabaseName("idx_stock_movements_type");
-
-                    b.HasIndex("OrderId")
-                        .HasDatabaseName("idx_stock_movements_order_id");
-
-                    b.HasIndex("ProductId")
-                        .HasDatabaseName("idx_stock_movements_product_id");
+                    b.HasIndex("ProductId");
 
                     b.ToTable("StockMovements");
                 });

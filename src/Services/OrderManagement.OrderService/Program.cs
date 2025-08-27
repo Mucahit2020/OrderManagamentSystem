@@ -1,5 +1,6 @@
 using MassTransit;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.OpenApi.Models;
 using OrderManagement.Common.Configuration;
 using OrderManagement.OrderService.Data;
 using OrderManagement.OrderService.EventHandlers;
@@ -23,7 +24,22 @@ builder.Host.UseSerilog();
 // Add services to the container
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddSwaggerGen(c =>
+{
+    c.SwaggerDoc("v1", new OpenApiInfo
+    {
+        Title = "Order Service API",
+        Version = "v1",
+        Description = "Order management microservice for Order Management System"
+    });
+
+    var xmlFile = $"{System.Reflection.Assembly.GetExecutingAssembly().GetName().Name}.xml";
+    var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
+    if (File.Exists(xmlPath))
+    {
+        c.IncludeXmlComments(xmlPath);
+    }
+});
 
 // Database Configuration
 var databaseConfig = builder.Configuration.GetSection(DatabaseConfig.SectionName).Get<DatabaseConfig>();
@@ -35,13 +51,17 @@ builder.Services.AddDbContext<OrderContext>(options =>
         .LogTo(Console.WriteLine, LogLevel.Information);
 });
 
+// AutoMapper Configuration (Invoice Service'deki gibi sýrayla)
+builder.Services.AddAutoMapper(typeof(OrderMappingProfile));
+
 // Repository Registration
 builder.Services.AddScoped<IOrderRepository, OrderRepository>();
+
+// Service Registration
 builder.Services.AddScoped<IOrderService, OrderManagement.OrderService.Services.OrderService>();
 
 // MassTransit Configuration
 var rabbitMqConfig = builder.Configuration.GetSection(RabbitMqConfig.SectionName).Get<RabbitMqConfig>();
-
 
 builder.Services.AddMassTransit(x =>
 {
@@ -65,7 +85,7 @@ builder.Services.AddMassTransit(x =>
     });
 });
 
-// Health checks with proper RabbitMQ connection string
+// Health checks
 var rabbitMqConnectionString =
     $"amqp://{rabbitMqConfig?.Username ?? "admin"}:{rabbitMqConfig?.Password ?? "password123"}@" +
     $"{rabbitMqConfig?.Host ?? "rabbitmq"}:{rabbitMqConfig?.Port ?? 5672}/{rabbitMqConfig?.VirtualHost ?? "/"}";
@@ -73,8 +93,6 @@ var rabbitMqConnectionString =
 builder.Services.AddHealthChecks()
     .AddNpgSql(databaseConfig?.ConnectionString ?? builder.Configuration.GetConnectionString("DefaultConnection"))
     .AddRabbitMQ(rabbitMqConnectionString, name: "rabbitmq", timeout: TimeSpan.FromSeconds(5));
-
-builder.Services.AddAutoMapper(typeof(OrderMappingProfile));
 
 var app = builder.Build();
 
@@ -93,7 +111,7 @@ app.MapControllers();
 app.MapHealthChecks("/health");
 app.MapHealthChecks("/health/ready");
 
-// Database migration on startup
+// Database migration on startup (isteðe baðlý - Invoice Service'de comment'te)
 //using (var scope = app.Services.CreateScope())
 //{
 //    var context = scope.ServiceProvider.GetRequiredService<OrderContext>();
@@ -109,11 +127,11 @@ app.MapHealthChecks("/health/ready");
 //    }
 //}
 
-//Log.Information("Order Service starting up...");
+Log.Information("Order Service starting up...");
 
 try
 {
-    await app.RunAsync();
+    await app.RunAsync(); // Bu satýr eksikti!
 }
 catch (Exception ex)
 {
