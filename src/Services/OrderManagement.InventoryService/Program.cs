@@ -116,8 +116,8 @@ app.MapHealthChecks("/health/ready");
 //    var context = scope.ServiceProvider.GetRequiredService<InventoryContext>();
 //    try
 //    {
-//        //await context.Database.MigrateAsync();
-//        //Log.Information("Database migration completed successfully");
+//        await context.Database.MigrateAsync();
+//        Log.Information("Database migration completed successfully");
 
 //        // Seed initial data if needed
 //        await SeedInitialDataAsync(context);
@@ -144,62 +144,62 @@ finally
     Log.CloseAndFlush();
 }
 
-//static async Task SeedInitialDataAsync(InventoryContext context)
-//{
-//    if (!await context.Products.AnyAsync()) // Bu EF üzerinden kontrol ediyor, tablo adý önemli deðil
-//    {
-//        var products = new[]
-//        {
-//            new OrderManagement.InventoryService.Models.Product
-//            {
-//                Id = Guid.Parse("11111111-1111-1111-1111-111111111111"),
-//                Name = "iPhone 15 Pro",
-//                Description = "Apple iPhone 15 Pro 128GB",
-//                Price = 999.99m,
-//                StockQuantity = 50,
-//                IsActive = true
-//            },
-//            new OrderManagement.InventoryService.Models.Product
-//            {
-//                Id = Guid.Parse("22222222-2222-2222-2222-222222222222"),
-//                Name = "Samsung Galaxy S24",
-//                Description = "Samsung Galaxy S24 Ultra 256GB",
-//                Price = 1199.99m,
-//                StockQuantity = 30,
-//                IsActive = true
-//            },
-//            new OrderManagement.InventoryService.Models.Product
-//            {
-//                Id = Guid.Parse("33333333-3333-3333-3333-333333333333"),
-//                Name = "MacBook Pro M3",
-//                Description = "MacBook Pro 14\" M3 512GB",
-//                Price = 1999.99m,
-//                StockQuantity = 20,
-//                IsActive = true
-//            },
-//            new OrderManagement.InventoryService.Models.Product
-//            {
-//                Id = Guid.Parse("44444444-4444-4444-4444-444444444444"),
-//                Name = "AirPods Pro",
-//                Description = "Apple AirPods Pro 2nd Gen",
-//                Price = 249.99m,
-//                StockQuantity = 100,
-//                IsActive = true
-//            },
-//            new OrderManagement.InventoryService.Models.Product
-//            {
-//                Id = Guid.Parse("55555555-5555-5555-5555-555555555555"),
-//                Name = "Dell XPS 13",
-//                Description = "Dell XPS 13 Laptop Intel i7",
-//                Price = 1299.99m,
-//                StockQuantity = 15,
-//                IsActive = true
-//            }
-//        };
+static async Task SeedInitialDataAsync(InventoryContext context)
+{
+    if (!await context.Products.AnyAsync()) // Bu EF üzerinden kontrol ediyor, tablo adý önemli deðil
+    {
+        var products = new[]
+        {
+            new OrderManagement.InventoryService.Models.Product
+            {
+                Id = Guid.Parse("11111111-1111-1111-1111-111111111111"),
+                Name = "iPhone 15 Pro",
+                Description = "Apple iPhone 15 Pro 128GB",
+                Price = 999.99m,
+                StockQuantity = 50,
+                IsActive = true
+            },
+            new OrderManagement.InventoryService.Models.Product
+            {
+                Id = Guid.Parse("22222222-2222-2222-2222-222222222222"),
+                Name = "Samsung Galaxy S24",
+                Description = "Samsung Galaxy S24 Ultra 256GB",
+                Price = 1199.99m,
+                StockQuantity = 30,
+                IsActive = true
+            },
+            new OrderManagement.InventoryService.Models.Product
+            {
+                Id = Guid.Parse("33333333-3333-3333-3333-333333333333"),
+                Name = "MacBook Pro M3",
+                Description = "MacBook Pro 14\" M3 512GB",
+                Price = 1999.99m,
+                StockQuantity = 20,
+                IsActive = true
+            },
+            new OrderManagement.InventoryService.Models.Product
+            {
+                Id = Guid.Parse("44444444-4444-4444-4444-444444444444"),
+                Name = "AirPods Pro",
+                Description = "Apple AirPods Pro 2nd Gen",
+                Price = 249.99m,
+                StockQuantity = 100,
+                IsActive = true
+            },
+            new OrderManagement.InventoryService.Models.Product
+            {
+                Id = Guid.Parse("55555555-5555-5555-5555-555555555555"),
+                Name = "Dell XPS 13",
+                Description = "Dell XPS 13 Laptop Intel i7",
+                Price = 1299.99m,
+                StockQuantity = 15,
+                IsActive = true
+            }
+        };
 
-//        await context.Products.AddRangeAsync(products);
-//        await context.SaveChangesAsync();
+        await context.Products.AddRangeAsync(products);
+        await context.SaveChangesAsync();
 
-//        Log.Information("Initial product data seeded successfully");
-//    }
-//}
+        Log.Information("Initial product data seeded successfully");
+    }
+}

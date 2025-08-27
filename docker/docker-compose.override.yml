@@ -5,16 +5,31 @@ services:
     environment:
       - POSTGRES_LOG_STATEMENT=all
       - POSTGRES_LOG_MIN_MESSAGES=info
+    command: >
+      postgres
+      -c log_statement=all
+      -c log_destination=stderr
+      -c logging_collector=off
 
   inventory-db:
     environment:
       - POSTGRES_LOG_STATEMENT=all  
       - POSTGRES_LOG_MIN_MESSAGES=info
+    command: >
+      postgres
+      -c log_statement=all
+      -c log_destination=stderr
+      -c logging_collector=off
 
   invoices-db:
     environment:
       - POSTGRES_LOG_STATEMENT=all
       - POSTGRES_LOG_MIN_MESSAGES=info
+    command: >
+      postgres
+      -c log_statement=all
+      -c log_destination=stderr
+      -c logging_collector=off
 
   rabbitmq:
     environment:
@@ -22,10 +37,6 @@ services:
     # Development için extra management plugins
     command: >
       bash -c "
-        rabbitmq-plugins enable rabbitmq_management rabbitmq_shovel rabbitmq_shovel_management &&
+        rabbitmq-plugins enable rabbitmq_management rabbitmq_shovel rabbitmq_shovel_management rabbitmq_tracing &&
         rabbitmq-server
       "
-
-# ====================================
-# DATABASE INITIALIZATION SCRIPTS
-# ====================================

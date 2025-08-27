@@ -29,4 +29,8 @@
     <ProjectReference Include="..\..\Common\OrderManagement.Common\OrderManagement.Common.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Data\Migrations\" />
+  </ItemGroup>
+
 </Project>
