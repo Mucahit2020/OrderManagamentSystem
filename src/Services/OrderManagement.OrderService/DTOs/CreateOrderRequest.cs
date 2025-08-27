@@ -1,5 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
-using OrderManagement.Common.Attributes;
+﻿using OrderManagement.Common.Attributes;
+using System.ComponentModel.DataAnnotations;
 
 namespace OrderManagement.OrderService.DTOs;
 

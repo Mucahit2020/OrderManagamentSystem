@@ -42,6 +42,7 @@ builder.Services.AddScoped<IOrderService, OrderManagement.OrderService.Services.
 // MassTransit Configuration
 var rabbitMqConfig = builder.Configuration.GetSection(RabbitMqConfig.SectionName).Get<RabbitMqConfig>();
 
+
 builder.Services.AddMassTransit(x =>
 {
     // Add consumers (event handlers)
@@ -56,7 +57,6 @@ builder.Services.AddMassTransit(x =>
             h.Password(rabbitMqConfig?.Password ?? "password123");
         });
 
-
         // Configure endpoints with naming conventions
         cfg.ConfigureEndpoints(context, new KebabCaseEndpointNameFormatter("order", false));
 
@@ -65,6 +65,7 @@ builder.Services.AddMassTransit(x =>
     });
 });
 
+// Health checks with proper RabbitMQ connection string
 var rabbitMqConnectionString =
     $"amqp://{rabbitMqConfig?.Username ?? "admin"}:{rabbitMqConfig?.Password ?? "password123"}@" +
     $"{rabbitMqConfig?.Host ?? "rabbitmq"}:{rabbitMqConfig?.Port ?? 5672}/{rabbitMqConfig?.VirtualHost ?? "/"}";

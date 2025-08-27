@@ -1,6 +1,5 @@
 ﻿using OrderManagement.Common.Events;
 using OrderManagement.OrderService.DTOs;
-using OrderManagement.OrderService.Models;
 
 namespace OrderManagement.OrderService.Services;
 
