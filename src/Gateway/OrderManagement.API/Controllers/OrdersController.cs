@@ -31,36 +31,37 @@ public class OrdersController : ControllerBase
     [ProducesResponseType(400)]
     [ProducesResponseType(500)]
     public async Task<ActionResult<OrderResponse>> CreateOrder(
-        [FromBody] CreateOrderRequest request,
-        [FromHeader(Name = "Idempotency-Key")][Required] string idempotencyKey,
-        CancellationToken cancellationToken = default)
+     [FromBody] CreateOrderRequest request,
+     [FromHeader(Name = "Idempotency-Key")][Required] string idempotencyKey,
+     CancellationToken cancellationToken = default)
     {
-        _logger.LogInformation("Received order creation request with idempotency key: {IdempotencyKey}", idempotencyKey);
+        _logger.LogInformation("Idempotency anahtarı {IdempotencyKey} ile sipariş oluşturma isteği alındı.", idempotencyKey);
 
         if (string.IsNullOrWhiteSpace(idempotencyKey))
         {
-            return BadRequest("Idempotency-Key header is required");
+            return BadRequest("Idempotency-Key zorunludur!");
         }
 
         try
         {
             var order = await _orderServiceClient.CreateOrderAsync(idempotencyKey, request, cancellationToken);
 
-            // Determine if this was a new order or existing order (idempotency)
-            // This would require additional logic to differentiate 201 vs 200 responses
+            // Bu sipariş yeni mi yoksa daha önce oluşturulmuş mu (idempotency)?
+            // 201 ile 200 yanıtlarını ayırt etmek için ek mantık gerekir.
             return CreatedAtAction(nameof(GetOrder), new { id = order.Id }, order);
         }
         catch (HttpRequestException ex)
         {
-            _logger.LogError(ex, "Error calling Order Service for idempotency key: {IdempotencyKey}", idempotencyKey);
-            return StatusCode(500, "Internal server error occurred while creating order");
+            _logger.LogError(ex, "Sipariş Servisini çağırırken idempotency anahtarı {IdempotencyKey} için hata oluştu", idempotencyKey);
+            return StatusCode(500, "Sipariş oluşturulurken dahili sunucu hatası meydana geldi");
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Unexpected error creating order with idempotency key: {IdempotencyKey}", idempotencyKey);
-            return StatusCode(500, "An unexpected error occurred");
+            _logger.LogError(ex, "Idempotency anahtarı {IdempotencyKey} ile sipariş oluşturulurken beklenmeyen hata oluştu", idempotencyKey);
+            return StatusCode(500, "Beklenmeyen bir hata oluştu");
         }
     }
+
 
     /// <summary>
     /// Get order by ID
@@ -74,19 +75,22 @@ public class OrdersController : ControllerBase
     [ProducesResponseType(500)]
     public async Task<ActionResult<OrderResponse>> GetOrder(Guid id, CancellationToken cancellationToken = default)
     {
-        _logger.LogInformation("Getting order: {OrderId}", id);
+        _logger.LogInformation("Sipariş alınıyor: {OrderId}", id);
 
         try
         {
             var order = await _orderServiceClient.GetOrderByIdAsync(id, cancellationToken);
-            return order != null ? Ok(order) : NotFound($"Order with ID {id} not found");
+            return order != null
+                ? Ok(order)
+                : NotFound($"ID'si {id} olan sipariş bulunamadı");
         }
         catch (HttpRequestException ex)
         {
-            _logger.LogError(ex, "Error calling Order Service for order: {OrderId}", id);
-            return StatusCode(500, "Internal server error occurred while retrieving order");
+            _logger.LogError(ex, "Order Service çağrılırken hata oluştu: {OrderId}", id);
+            return StatusCode(500, "Sipariş alınırken dahili sunucu hatası oluştu");
         }
     }
+
 
     /// <summary>
     /// Get orders by customer ID
@@ -97,9 +101,11 @@ public class OrdersController : ControllerBase
     [HttpGet("customer/{customerId:guid}")]
     [ProducesResponseType(typeof(List<OrderResponse>), 200)]
     [ProducesResponseType(500)]
-    public async Task<ActionResult<List<OrderResponse>>> GetOrdersByCustomer(Guid customerId, CancellationToken cancellationToken = default)
+    public async Task<ActionResult<List<OrderResponse>>> GetOrdersByCustomer(
+    Guid customerId,
+    CancellationToken cancellationToken = default)
     {
-        _logger.LogInformation("Getting orders for customer: {CustomerId}", customerId);
+        _logger.LogInformation("Müşteri için siparişler alınıyor: {CustomerId}", customerId);
 
         try
         {
@@ -108,8 +114,9 @@ public class OrdersController : ControllerBase
         }
         catch (HttpRequestException ex)
         {
-            _logger.LogError(ex, "Error calling Order Service for customer: {CustomerId}", customerId);
-            return StatusCode(500, "Internal server error occurred while retrieving customer orders");
+            _logger.LogError(ex, "Order Service çağrılırken hata oluştu: {CustomerId}", customerId);
+            return StatusCode(500, "Müşteri siparişleri alınırken dahili sunucu hatası oluştu");
         }
     }
+
 }

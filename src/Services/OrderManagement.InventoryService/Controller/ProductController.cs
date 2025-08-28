@@ -17,7 +17,7 @@ public class ProductsController : ControllerBase
     }
 
     /// <summary>
-    /// Get all active products
+    /// Tüm aktif ürünleri getir
     /// </summary>
     [HttpGet]
     public async Task<IActionResult> GetProducts(CancellationToken cancellationToken = default)
@@ -27,23 +27,23 @@ public class ProductsController : ControllerBase
     }
 
     /// <summary>
-    /// Get product by ID
+    /// ID'ye göre ürün getir
     /// </summary>
     [HttpGet("{id:guid}")]
     public async Task<IActionResult> GetProduct(Guid id, CancellationToken cancellationToken = default)
     {
         var product = await _productService.GetProductByIdAsync(id, cancellationToken);
-        return product != null ? Ok(product) : NotFound($"Product with ID {id} not found");
+        return product != null ? Ok(product) : NotFound($"ID'si {id} olan ürün bulunamadı");
     }
 
     /// <summary>
-    /// Get products by multiple IDs
+    /// Birden fazla ID ile ürünleri getir
     /// </summary>
     [HttpPost("batch")]
     public async Task<IActionResult> GetProductsBatch([FromBody] List<Guid> productIds, CancellationToken cancellationToken = default)
     {
         if (productIds == null || productIds.Count == 0)
-            return BadRequest("Product IDs cannot be empty");
+            return BadRequest("Ürün ID'leri boş olamaz");
 
         var products = await _productService.GetProductsByIdsAsync(productIds, cancellationToken);
         return Ok(products);

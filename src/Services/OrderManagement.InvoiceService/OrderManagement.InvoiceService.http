@@ -1,8 +1,0 @@
-@OrderManagement.InvoiceService_HostAddress = http://localhost:5254
-
-GET {{OrderManagement.InvoiceService_HostAddress}}/weatherforecast/
-Accept: application/json
-
-###
-
-

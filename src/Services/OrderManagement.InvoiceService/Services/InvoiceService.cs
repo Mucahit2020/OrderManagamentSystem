@@ -32,23 +32,22 @@ public class InvoiceService : IInvoiceService
 
     public async Task HandleOrderCompletedAsync(OrderCompleted orderCompleted, CancellationToken cancellationToken = default)
     {
-        _logger.LogInformation("Handling OrderCompleted event for order: {OrderId}", orderCompleted.OrderId);
+        _logger.LogInformation("OrderCompleted eventi işleniyor: {OrderId}", orderCompleted.OrderId);
 
         try
         {
-            // Check if invoice already exists (idempotency)
+            // Fatura zaten var mı kontrol et (idempotency)
             var existingInvoice = await _invoiceRepository.GetByOrderIdAsync(orderCompleted.OrderId, cancellationToken);
             if (existingInvoice != null)
             {
-                _logger.LogInformation("Invoice already exists for order: {OrderId}, InvoiceId: {InvoiceId}",
+                _logger.LogInformation("Sipariş için fatura zaten mevcut: {OrderId}, FaturaId: {InvoiceId}",
                     orderCompleted.OrderId, existingInvoice.Id);
                 return;
             }
 
-            // Generate invoice number
+            // Fatura numarası oluştur
             var invoiceNumber = GenerateInvoiceNumber();
 
-            // Create invoice
             var invoice = new Invoice
             {
                 Id = Guid.NewGuid(),
@@ -59,23 +58,21 @@ public class InvoiceService : IInvoiceService
                 Status = InvoiceStatus.Pending
             };
 
-            // Save to database first
             await _invoiceRepository.CreateAsync(invoice, cancellationToken);
 
-            // Call external service to create invoice
             var externalRequest = new CreateExternalInvoiceRequest
             {
                 OrderId = orderCompleted.OrderId,
                 CustomerId = orderCompleted.CustomerId,
                 Amount = orderCompleted.TotalAmount,
-                Items = new List<ExternalInvoiceItemRequest>() // Would map from order items in real scenario
+                Items = new List<ExternalInvoiceItemRequest>() 
             };
 
             var externalResponse = await _externalInvoiceService.CreateInvoiceAsync(externalRequest, cancellationToken);
 
             if (externalResponse.Success)
             {
-                // Update invoice with external reference
+                // Faturayı güncelle (başarılı)
                 invoice.Status = InvoiceStatus.Created;
                 invoice.ExternalInvoiceId = externalResponse.InvoiceId;
                 invoice.ExternalReference = externalResponse.Reference;
@@ -83,7 +80,7 @@ public class InvoiceService : IInvoiceService
 
                 await _invoiceRepository.UpdateAsync(invoice, cancellationToken);
 
-                // Publish InvoiceCreated event
+                // InvoiceCreated event’i publish et
                 var invoiceCreatedEvent = new InvoiceCreated
                 {
                     OrderId = invoice.OrderId,
@@ -93,43 +90,44 @@ public class InvoiceService : IInvoiceService
                 };
 
                 await _publishEndpoint.Publish(invoiceCreatedEvent, cancellationToken);
-                _logger.LogInformation("InvoiceCreated event published for order: {OrderId}", orderCompleted.OrderId);
+                _logger.LogInformation("InvoiceCreated eventi publish edildi: {OrderId}", orderCompleted.OrderId);
             }
             else
             {
-                // Update invoice with failure
+                // Faturayı başarısız olarak güncelle
                 invoice.Status = InvoiceStatus.Failed;
                 invoice.FailureReason = externalResponse.ErrorMessage;
                 invoice.ProcessedAt = DateTime.UtcNow;
 
                 await _invoiceRepository.UpdateAsync(invoice, cancellationToken);
 
-                // Publish InvoiceFailed event
+                // InvoiceFailed event’i publish et
                 var invoiceFailedEvent = new InvoiceFailed
                 {
                     OrderId = invoice.OrderId,
-                    Reason = externalResponse.ErrorMessage ?? "Unknown error occurred during invoice creation"
+                    Reason = externalResponse.ErrorMessage ?? "Fatura oluşturulurken bilinmeyen bir hata oluştu"
                 };
 
                 await _publishEndpoint.Publish(invoiceFailedEvent, cancellationToken);
-                _logger.LogError("Invoice creation failed for order: {OrderId}, Reason: {Reason}",
+                _logger.LogError("Fatura oluşturulamadı: {OrderId}, Sebep: {Reason}",
                     orderCompleted.OrderId, externalResponse.ErrorMessage);
             }
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error handling OrderCompleted event for order: {OrderId}", orderCompleted.OrderId);
+            _logger.LogError(ex, "OrderCompleted eventi işlenirken hata oluştu: {OrderId}", orderCompleted.OrderId);
 
-            // Publish InvoiceFailed event
+            // Hata durumunda InvoiceFailed event publish et
             var invoiceFailedEvent = new InvoiceFailed
             {
                 OrderId = orderCompleted.OrderId,
-                Reason = $"Internal error: {ex.Message}"
+                Reason = $"Dahili hata: {ex.Message}"
             };
 
             await _publishEndpoint.Publish(invoiceFailedEvent, cancellationToken);
         }
     }
+
 
     public async Task<Invoice?> GetInvoiceByOrderIdAsync(Guid orderId, CancellationToken cancellationToken = default)
     {

@@ -111,21 +111,6 @@ app.MapControllers();
 app.MapHealthChecks("/health");
 app.MapHealthChecks("/health/ready");
 
-// Database migration on startup (isteðe baðlý - Invoice Service'de comment'te)
-//using (var scope = app.Services.CreateScope())
-//{
-//    var context = scope.ServiceProvider.GetRequiredService<OrderContext>();
-//    try
-//    {
-//        await context.Database.MigrateAsync();
-//        Log.Information("Database migration completed successfully");
-//    }
-//    catch (Exception ex)
-//    {
-//        Log.Fatal(ex, "Database migration failed");
-//        throw;
-//    }
-//}
 
 Log.Information("Order Service starting up...");
 

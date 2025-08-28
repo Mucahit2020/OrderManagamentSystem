@@ -23,7 +23,7 @@ public class OrderServiceClient : IOrderServiceClient
 
     public async Task<OrderResponse> CreateOrderAsync(string idempotencyKey, CreateOrderRequest request, CancellationToken cancellationToken = default)
     {
-        _logger.LogInformation("Creating order via Order Service with idempotency key: {IdempotencyKey}", idempotencyKey);
+        _logger.LogInformation("Idempotency anahtarı {IdempotencyKey} ile Sipariş Servisi üzerinden sipariş oluşturuluyor", idempotencyKey);
 
         var json = JsonSerializer.Serialize(request, _jsonOptions);
         var content = new StringContent(json, Encoding.UTF8, "application/json");
@@ -38,8 +38,9 @@ public class OrderServiceClient : IOrderServiceClient
         var responseJson = await response.Content.ReadAsStringAsync(cancellationToken);
         var orderResponse = JsonSerializer.Deserialize<OrderResponse>(responseJson, _jsonOptions);
 
-        return orderResponse ?? throw new InvalidOperationException("Failed to deserialize order response");
+        return orderResponse ?? throw new InvalidOperationException("Sipariş cevabı deserialize edilemedi");
     }
+
 
     public async Task<OrderResponse?> GetOrderByIdAsync(Guid orderId, CancellationToken cancellationToken = default)
     {

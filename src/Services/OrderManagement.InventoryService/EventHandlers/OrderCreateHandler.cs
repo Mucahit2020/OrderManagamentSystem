@@ -19,16 +19,16 @@ public class OrderCreatedHandler : IConsumer<OrderCreated>
     {
         var orderCreated = context.Message;
 
-        _logger.LogInformation("Received OrderCreated event for order: {OrderId}", orderCreated.OrderId);
+        _logger.LogInformation("Sipariş için OrderCreated eventi alındı: {OrderId}", orderCreated.OrderId);
 
         try
         {
             await _inventoryService.HandleOrderCreatedAsync(orderCreated, context.CancellationToken);
-            _logger.LogInformation("Successfully handled OrderCreated event for order: {OrderId}", orderCreated.OrderId);
+            _logger.LogInformation("OrderCreated event başarıyla işlendi: {OrderId}", orderCreated.OrderId);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error handling OrderCreated event for order: {OrderId}", orderCreated.OrderId);
+            _logger.LogError(ex, "OrderCreated event işlenirken hata oluştu: {OrderId}", orderCreated.OrderId);
             throw;
         }
     }

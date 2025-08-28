@@ -27,14 +27,16 @@ public class InventoryService : IInventoryService
 
     public async Task HandleOrderCreatedAsync(OrderCreated orderCreated, CancellationToken cancellationToken = default)
     {
-        _logger.LogInformation("Handling OrderCreated event for order: {OrderId}", orderCreated.OrderId);
+        _logger.LogInformation("OrderCreated event’i işleniyor: {OrderId}", orderCreated.OrderId);
 
         try
         {
+            // Stok yeterli mi kontrol
             var canFulfill = await CheckStockAvailabilityAsync(orderCreated.Items, cancellationToken);
 
             if (canFulfill)
             {
+                // Yeterliyse stoktan düşme işlemi.
                 var success = await ReduceStockAsync(orderCreated.OrderId, orderCreated.Items, cancellationToken);
 
                 if (success)
@@ -52,26 +54,29 @@ public class InventoryService : IInventoryService
                     };
 
                     await _publishEndpoint.Publish(stockReduced, cancellationToken);
-                    _logger.LogInformation("StockReduced event published for order: {OrderId}", orderCreated.OrderId);
+                    _logger.LogInformation("StockReduced eventi yayımlandı: {OrderId}", orderCreated.OrderId);
                 }
                 else
                 {
-                    await PublishStockFailedAsync(orderCreated.OrderId, "Failed to reduce stock", orderCreated.Items, cancellationToken);
+                    await PublishStockFailedAsync(orderCreated.OrderId, "Stok düşürülemedi", orderCreated.Items, cancellationToken);
                 }
             }
             else
             {
-                await PublishStockFailedAsync(orderCreated.OrderId, "Insufficient stock", orderCreated.Items, cancellationToken);
+                await PublishStockFailedAsync(orderCreated.OrderId, "Yetersiz stok", orderCreated.Items, cancellationToken);
             }
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error handling OrderCreated event for order: {OrderId}", orderCreated.OrderId);
-            await PublishStockFailedAsync(orderCreated.OrderId, $"Error: {ex.Message}", orderCreated.Items, cancellationToken);
+            _logger.LogError(ex, "OrderCreated event işlenirken hata oluştu: {OrderId}", orderCreated.OrderId);
+            await PublishStockFailedAsync(orderCreated.OrderId, $"Hata: {ex.Message}", orderCreated.Items, cancellationToken);
         }
     }
 
-    public async Task<bool> CheckStockAvailabilityAsync(List<OrderManagement.Common.Models.OrderItemDto> items, CancellationToken cancellationToken = default)
+
+    public async Task<bool> CheckStockAvailabilityAsync(
+     List<OrderManagement.Common.Models.OrderItemDto> items,
+     CancellationToken cancellationToken = default)
     {
         var productIds = items.Select(i => i.ProductId).ToList();
         var products = await _productRepository.GetByIdsAsync(productIds, cancellationToken);
@@ -81,7 +86,8 @@ public class InventoryService : IInventoryService
             var product = products.FirstOrDefault(p => p.Id == item.ProductId);
             if (product == null || product.StockQuantity < item.Quantity)
             {
-                _logger.LogWarning("Insufficient stock for product: {ProductId}, Required: {Required}, Available: {Available}",
+                _logger.LogWarning(
+                    "Ürün için yeterli stok yok: {ProductId}, Gerekli: {Required}, Mevcut: {Available}",
                     item.ProductId, item.Quantity, product?.StockQuantity ?? 0);
                 return false;
             }
@@ -90,7 +96,11 @@ public class InventoryService : IInventoryService
         return true;
     }
 
-    public async Task<bool> ReduceStockAsync(Guid orderId, List<OrderManagement.Common.Models.OrderItemDto> items, CancellationToken cancellationToken = default)
+
+    public async Task<bool> ReduceStockAsync(
+    Guid orderId,
+    List<OrderManagement.Common.Models.OrderItemDto> items,
+    CancellationToken cancellationToken = default)
     {
         var productIds = items.Select(i => i.ProductId).ToList();
         var products = await _productRepository.GetByIdsAsync(productIds, cancellationToken);
@@ -116,7 +126,7 @@ public class InventoryService : IInventoryService
                 Quantity = item.Quantity,
                 PreviousQuantity = previousQuantity,
                 NewQuantity = product.StockQuantity,
-                Reason = $"Order {orderId} processed"
+                Reason = $"Sipariş {orderId} işlendi"
             };
 
             await _stockMovementRepository.CreateAsync(stockMovement, cancellationToken);
@@ -125,7 +135,11 @@ public class InventoryService : IInventoryService
         return true;
     }
 
-    private async Task PublishStockFailedAsync(Guid orderId, string reason, List<OrderManagement.Common.Models.OrderItemDto> items, CancellationToken cancellationToken)
+    private async Task PublishStockFailedAsync(
+    Guid orderId,
+    string reason,
+    List<OrderManagement.Common.Models.OrderItemDto> items,
+    CancellationToken cancellationToken)
     {
         var stockFailed = new StockFailed
         {
@@ -136,11 +150,11 @@ public class InventoryService : IInventoryService
                 ProductId = item.ProductId,
                 ProductName = item.ProductName,
                 RequestedQuantity = item.Quantity,
-                AvailableQuantity = 0 // This would need to be fetched from DB for accurate reporting
+                AvailableQuantity = 0 // Gerçek miktar için DB’den çekilmesi gerekir
             }).ToList()
         };
 
         await _publishEndpoint.Publish(stockFailed, cancellationToken);
-        _logger.LogInformation("StockFailed event published for order: {OrderId}", orderId);
+        _logger.LogInformation("StockFailed eventi yayımlandı: {OrderId}", orderId);
     }
 }

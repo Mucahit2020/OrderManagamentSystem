@@ -19,16 +19,19 @@ public class OrderCompletedHandler : IConsumer<OrderCompleted>
     {
         var orderCompleted = context.Message;
 
-        _logger.LogInformation("Received OrderCompleted event for order: {OrderId}", orderCompleted.OrderId);
+        // Sipariş tamamlandı eventi alındığında logla
+        _logger.LogInformation("Sipariş tamamlandı eventi alındı: {OrderId}", orderCompleted.OrderId);
 
         try
         {
+            // Sipariş tamamlandı eventini işle
             await _invoiceService.HandleOrderCompletedAsync(orderCompleted, context.CancellationToken);
-            _logger.LogInformation("Successfully handled OrderCompleted event for order: {OrderId}", orderCompleted.OrderId);
+            _logger.LogInformation("Sipariş tamamlandı eventi başarıyla işlendi: {OrderId}", orderCompleted.OrderId);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error handling OrderCompleted event for order: {OrderId}", orderCompleted.OrderId);
+            // Hata oluşursa logla ve tekrar fırlat
+            _logger.LogError(ex, "Sipariş tamamlandı eventi işlenirken hata oluştu: {OrderId}", orderCompleted.OrderId);
             throw;
         }
     }

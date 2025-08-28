@@ -21,28 +21,28 @@ public class InvoicesController : ControllerBase
     }
 
     /// <summary>
-    /// Get invoice by order ID
+    /// Sipariş ID'sine göre faturayı getir
     /// </summary>
     [HttpGet("by-order/{orderId:guid}")]
     public async Task<ActionResult<InvoiceDto>> GetInvoiceByOrderId(Guid orderId, CancellationToken cancellationToken = default)
     {
         var invoice = await _invoiceService.GetInvoiceByOrderIdAsync(orderId, cancellationToken);
         if (invoice == null)
-            return NotFound($"Invoice not found for order ID: {orderId}");
+            return NotFound($"Sipariş ID'si {orderId} için fatura bulunamadı");
 
         var invoiceDto = _mapper.Map<InvoiceDto>(invoice);
         return Ok(invoiceDto);
     }
 
     /// <summary>
-    /// Get invoice by invoice ID
+    /// Fatura ID'sine göre faturayı getir
     /// </summary>
     [HttpGet("{invoiceId:guid}")]
     public async Task<ActionResult<InvoiceDto>> GetInvoice(Guid invoiceId, CancellationToken cancellationToken = default)
     {
         var invoice = await _invoiceService.GetInvoiceByIdAsync(invoiceId, cancellationToken);
         if (invoice == null)
-            return NotFound($"Invoice not found: {invoiceId}");
+            return NotFound($"ID'si {invoiceId} olan fatura bulunamadı");
 
         var invoiceDto = _mapper.Map<InvoiceDto>(invoice);
         return Ok(invoiceDto);

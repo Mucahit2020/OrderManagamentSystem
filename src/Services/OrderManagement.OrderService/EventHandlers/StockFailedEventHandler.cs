@@ -19,17 +19,17 @@ public class StockFailedHandler : IConsumer<StockFailed>
     {
         var stockFailed = context.Message;
 
-        _logger.LogInformation("Received StockFailed event for order: {OrderId}", stockFailed.OrderId);
+        _logger.LogInformation("StockFailed eventi alındı: {OrderId}", stockFailed.OrderId);
 
         try
         {
             await _orderService.HandleStockFailedAsync(stockFailed, context.CancellationToken);
-            _logger.LogInformation("Successfully handled StockFailed event for order: {OrderId}", stockFailed.OrderId);
+            _logger.LogInformation("StockFailed eventi başarıyla işlendi: {OrderId}", stockFailed.OrderId);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error handling StockFailed event for order: {OrderId}", stockFailed.OrderId);
-            throw; // Let MassTransit handle retry logic
+            _logger.LogError(ex, "StockFailed eventi işlenirken hata oluştu: {OrderId}", stockFailed.OrderId);
+            throw; // MassTransit’in retry mekanizmasının devreye girmesi için hatayı tekrar fırlat
         }
     }
 }
